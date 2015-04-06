@@ -76,20 +76,19 @@ class hdmi_plasmoid(plasmascript.Applet):
 
     def on_click(self):
         self.enabled = not self.enabled
-        self.ctrl.select_profile(self.card_idx, self.hdmi_profile if self.enabled else self.def_profile)
+        self.ctrl.select_profile(self.card_id, self.hdmi_profile if self.enabled else self.def_profile)
         self.update_icon()
 
     def on_timer(self):
-        active = self.ctrl.get_active_profile(self.card_idx)
+        active = self.ctrl.get_active_profile(self.card_id)
         if (active != None):
-            print active, self.hdmi_profile
             enabled = (active == self.hdmi_profile)
             if (enabled != self.enabled):
                 self.enabled = enabled
                 self.update_icon()
 
     def read_config(self):
-        self.card_idx = self.get_cfg_value("card_idx", "")
+        self.card_id = self.get_cfg_value("card_id", "")
         self.def_profile = self.get_cfg_value("def_profile", "")
         self.hdmi_profile = self.get_cfg_value("hdmi_profile", "")
 

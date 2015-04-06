@@ -63,28 +63,49 @@ class dialog(QtGui.QDialog):
     def read_config(self):
         # fill cards
         select_card = -1
-        card_idx = self.get_cfg_value("card_idx", "")
-        for idx in self.cards_def.keys():
-            self.cb_card.addItem("%s: %s" % (idx, self.cards_def[idx]["name"]), idx)
-            if (idx == card_idx):
+        card_id = self.get_cfg_value("card_id", "")
+        for id in self.cards_def.keys():
+            self.cb_card.addItem("%s" % self.cards_def[id]["name"], id)
+            if (id == card_id):
                 select_card = self.cb_card.count() - 1
         # select saved card
         if (select_card != -1):
             self.cb_card.setCurrentIndex(select_card)
+            self.on_card_select(self.cb_card.currentIndex())
+            self.load_saved_profiles()
         elif (len(self.cards_def) > 0):
             self.cb_card.setCurrentIndex(0)
-        self.on_card_select(self.cb_card.currentIndex())
-        # select saved profile
-        if (select_card != -1):
-            def_profile = self.get_cfg_value("def_profile", "")
-            hdmi_profile = self.get_cfg_value("hdmi_profile", "")
-            n = 0
-            for profile in self.cards_def[card_idx]["profiles"]:
-                if (profile["id"] == def_profile):
-                    self.cb_def_prof.setCurrentIndex(n)
-                if (profile["id"] == hdmi_profile):
-                    self.cb_hdmi_prof.setCurrentIndex(n)
-                n += 1
+            self.on_card_select(self.cb_card.currentIndex())
+            self.autochoose_profiles()
+
+    def load_saved_profiles(self):
+        card_id = self.get_cfg_value("card_id", "")
+        def_profile = self.get_cfg_value("def_profile", "")
+        hdmi_profile = self.get_cfg_value("hdmi_profile", "")
+        n = 0
+        for profile in self.cards_def[card_id]["profiles"]:
+            if (profile["id"] == def_profile):
+                self.cb_def_prof.setCurrentIndex(n)
+            if (profile["id"] == hdmi_profile):
+                self.cb_hdmi_prof.setCurrentIndex(n)
+            n += 1
+
+    def autochoose_profiles(self):
+        card_id = self.get_cfg_value("card_id", "")
+        def_idx = -1
+        hdmi_idx = -1
+        n = 0
+        for profile in self.cards_def[card_id]["profiles"]:
+            if ("output:" in profile["id"]):
+                if ("hdmi" in profile["id"]) or ("HDMI" in profile["id"]):
+                    hdmi_idx = n
+                else:
+                    def_idx = n
+            if (def_idx != -1) and (hdmi_idx != -1):
+                break
+            n += 1
+        self.on_def_prof_select(def_idx if (def_idx != -1) else 0)
+        self.on_hdmi_prof_select(hdmi_idx if (hdmi_idx != -1) else 0)
 
     def get_cfg_value(self, name, def_value):
         val = self.cfg.readEntry(name, def_value)
@@ -93,23 +114,23 @@ class dialog(QtGui.QDialog):
     def on_card_select(self, index):
         self.cb_def_prof.clear()
         self.cb_hdmi_prof.clear()
-        card_idx = str(self.cb_card.itemData(index).toString())
-        for profile in self.cards_def[card_idx]["profiles"]:
+        card_id = str(self.cb_card.itemData(index).toString())
+        for profile in self.cards_def[card_id]["profiles"]:
             self.cb_def_prof.addItem(profile["name"].decode("utf-8"), profile["id"])
             self.cb_hdmi_prof.addItem(profile["name"].decode("utf-8"), profile["id"])
-        self.cfg.writeEntry("card_idx", card_idx)
+        self.cfg.writeEntry("card_id", card_id)
         self.on_refresh_cfg()
 
     def on_def_prof_select(self, index):
-        card_idx = str(self.cb_card.itemData(self.cb_card.currentIndex()).toString())
+        card_id = str(self.cb_card.itemData(self.cb_card.currentIndex()).toString())
         id = str(self.cb_def_prof.itemData(index).toString())
         self.cfg.writeEntry("def_profile", id)
         self.on_refresh_cfg()
 
 
     def on_hdmi_prof_select(self, index):
-        card_idx = str(self.cb_card.itemData(self.cb_card.currentIndex()).toString())
+        card_id = str(self.cb_card.itemData(self.cb_card.currentIndex()).toString())
         id = str(self.cb_hdmi_prof.itemData(index).toString())
         self.cfg.writeEntry("hdmi_profile", id)
         self.on_refresh_cfg()
-        
+       
