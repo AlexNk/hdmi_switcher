@@ -1,11 +1,12 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=hdmi_switcher
+Name=HDMI Switcher
 Comment=Switching betwee HDMI and stereo output
 Type=Service
 ServiceTypes=Plasma/Applet
 X-Plasma-API=python
 X-Plasma-MainScript=code/main.py
+Icon=/hdmi.png
  
 X-KDE-PluginInfo-Author=LSK
 X-KDE-PluginInfo-Email=
